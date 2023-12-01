@@ -14,7 +14,7 @@ def solve_a(data):
 
 
 def solve_b(data):
-    digs = ["_", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+    digs = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
     acc = 0
 
     for line in data:
@@ -22,7 +22,7 @@ def solve_b(data):
         for i, c in enumerate(line):
             if c.isdigit():
                 digits.append(int(c))
-            for d, val in enumerate(digs):
+            for d, val in enumerate(digs, 1):
                 if line[i:].startswith(val):
                     digits.append(d)
         acc += digits[0] * 10 + digits[-1]
@@ -33,4 +33,6 @@ def solve_b(data):
 if __name__ == "__main__":
     from sys import stdin
 
-    data = stdin.read().strip()
+    data = parse_input(stdin.read().strip())
+    print(solve_a(data))
+    print(solve_b(data))
