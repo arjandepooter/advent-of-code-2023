@@ -1,7 +1,6 @@
 def parse_sample(sample):
-    iitems = sample.split(", ")
     items = []
-    for iitem in iitems:
+    for iitem in sample.split(", "):
         count, color = iitem.split(" ")
         items.append((int(count), color))
     return items
