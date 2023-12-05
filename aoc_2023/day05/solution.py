@@ -132,7 +132,10 @@ def solve_b(data):
 
 
 if __name__ == "__main__":
+    from doctest import testmod
     from sys import stdin
+
+    testmod()
 
     data = parse_input(stdin.read().strip())
     print(solve_a(data))
