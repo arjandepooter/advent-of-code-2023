@@ -1,3 +1,6 @@
+from collections import defaultdict
+
+
 def parse_input(data):
     symbols = {}
 
@@ -24,12 +27,12 @@ def get_adjacent_symbols(data, x, y, l):
     for dx in range(x - 1, x + l + 1):
         for dy in (-1, 1):
             if (dx, y + dy) in data:
-                symbols.append(data[(dx, y + dy)])
+                symbols.append((dx, y + dy, data[(dx, y + dy)]))
 
     if (x - 1, y) in data:
-        symbols.append(data[(x - 1, y)])
+        symbols.append((x - 1, y, data[(x - 1, y)]))
     if (x + l, y) in data:
-        symbols.append(data[(x + l, y)])
+        symbols.append((x + l, y, data[(x + l, y)]))
 
     return symbols
 
@@ -39,7 +42,7 @@ def solve_a(data):
 
     for (x, y), symbol in data.items():
         if symbol.isnumeric():
-            for adjacent_symbol in get_adjacent_symbols(data, x, y, len(symbol)):
+            for _, _, adjacent_symbol in get_adjacent_symbols(data, x, y, len(symbol)):
                 if not adjacent_symbol.isnumeric():
                     acc += int(symbol)
                     break
@@ -48,29 +51,16 @@ def solve_a(data):
 
 
 def solve_b(data):
-    acc = 0
+    stars = defaultdict(list)
     for (x, y), symbol in data.items():
-        if symbol == "*":
-            numbers = [
-                part for part in get_adjacent_symbols(data, x, y, 1) if part.isnumeric()
-            ]
-            # ouch
-            numbers += [
-                part
-                for part in get_adjacent_symbols(data, x - 1, y, 1)
-                if part.isnumeric() and len(part) == 2
-            ]
-            numbers += [
-                part
-                for part in get_adjacent_symbols(data, x - 2, y, 1)
-                if part.isnumeric() and len(part) == 3
-            ]
-            numbers = list(set(numbers))
+        if symbol.isnumeric():
+            for xs, ys, adjacent_symbol in get_adjacent_symbols(
+                data, x, y, len(symbol)
+            ):
+                if adjacent_symbol == "*":
+                    stars[(xs, ys)].append(int(symbol))
 
-            if len(numbers) == 2:
-                acc += int(numbers[0]) * int(numbers[1])
-
-    return acc
+    return sum(l[0] * l[1] for l in stars.values() if len(l) == 2)
 
 
 if __name__ == "__main__":
