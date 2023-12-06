@@ -5,7 +5,7 @@ def solve(t, d):
     D = t**2 - 4 * d
     p1 = (-t + D**0.5) / -2
     p2 = (-t - D**0.5) / -2
-    return floor(p2) - ceil(p1) + 1
+    return ceil(p2) - floor(p1) - 1
 
 
 def solve_a(data):
