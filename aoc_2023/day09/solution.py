@@ -18,29 +18,12 @@ def next_value(l):
     return l[-1] + next_value(diffs(l))
 
 
-def prev_value(l):
-    if all(c == 0 for c in l):
-        return 0
-
-    return l[0] - prev_value(diffs(l))
-
-
 def solve_a(data):
-    acc = 0
-
-    for values in data:
-        acc += next_value(values)
-
-    return acc
+    return sum(next_value(l) for l in data)
 
 
 def solve_b(data):
-    acc = 0
-
-    for values in data:
-        acc += prev_value(values)
-
-    return acc
+    return sum(next_value(l[::-1]) for l in data)
 
 
 if __name__ == "__main__":
