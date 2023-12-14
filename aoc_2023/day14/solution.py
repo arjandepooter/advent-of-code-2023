@@ -18,32 +18,18 @@ def parse_input(data: str):
     return dimensions, stones, walls
 
 
-def tilt(stones, walls, w, h, direction="N"):
-    catch = defaultdict(int)
+def tilt(stones, lookup_table, direction):
+    dx, dy = direction
     next_stones = []
-
+    wall_hits = defaultdict(int)
     for x, y in stones:
-        if direction == "N":
-            blocking_walls = [(wx, wy) for wx, wy in walls if wx == x and wy < y]
-            wx, wy = max(blocking_walls) if blocking_walls else (x, -1)
-            catch[(wx, wy)] += 1
-            next_stones.append((x, wy + catch[(wx, wy)]))
-        if direction == "W":
-            blocking_walls = [(wx, wy) for wx, wy in walls if wy == y and wx < x]
-            wx, wy = max(blocking_walls) if blocking_walls else (-1, y)
-            catch[(wx, wy)] += 1
-            next_stones.append((wx + catch[(wx, wy)], y))
-        if direction == "S":
-            blocking_walls = [(wx, wy) for wx, wy in walls if wx == x and wy > y]
-            wx, wy = min(blocking_walls) if blocking_walls else (x, h)
-            catch[(wx, wy)] += 1
-            next_stones.append((x, wy - catch[(wx, wy)]))
-        if direction == "E":
-            blocking_walls = [(wx, wy) for wx, wy in walls if wy == y and wx > x]
-            wx, wy = min(blocking_walls) if blocking_walls else (h, y)
-            catch[(wx, wy)] += 1
-            next_stones.append((wx - catch[(wx, wy)], y))
+        wx, wy = lookup_table[(x, y)]
+        wall_hits[(wx, wy)] += 1
+        next_stones.append(
+            (wall_hits[(wx, wy)] * dx + wx, wall_hits[(wx, wy)] * dy + wy)
+        )
 
+    next_stones.sort()
     return next_stones
 
 
@@ -55,52 +41,44 @@ def create_lookup_tables(walls, w, h):
     walls_x = [[wx for wx, wy in walls if wy == y] for y in range(h)]
     walls_y = [[wy for wx, wy in walls if wx == x] for x in range(w)]
 
-    lookup_north = []
+    lookup_north, lookup_west, lookup_south, lookup_east = {}, {}, {}, {}
     for y in range(h):
         for x in range(w):
-            pass
+            blocking_walls = [wy for wy in walls_y[x] if wy < y] + [-1]
+            lookup_north[(x, y)] = (x, max(blocking_walls))
+            blocking_walls = [wx for wx in walls_x[y] if wx < x] + [-1]
+            lookup_west[(x, y)] = (max(blocking_walls), y)
+            blocking_walls = [wy for wy in walls_y[x] if wy > y] + [h]
+            lookup_south[(x, y)] = (x, min(blocking_walls))
+            blocking_walls = [wx for wx in walls_x[y] if wx > x] + [w]
+            lookup_east[(x, y)] = (min(blocking_walls), y)
 
-
-def print_yo(stones, walls, w, h):
-    stones = set(stones)
-    walls = set(walls)
-    for y in range(h):
-        for x in range(h):
-            if (x, y) in stones:
-                print("0", end="")
-            elif (x, y) in walls:
-                print("#", end="")
-            else:
-                print(".", end="")
-        print()
-    print()
+    return lookup_north, lookup_west, lookup_south, lookup_east
 
 
 def solve_a(data):
     (w, h), stones, walls = data
+    lookup_table, *_ = create_lookup_tables(walls, w, h)
 
-    stones = tilt(stones, walls, w, h)
-    create_lookup_tables(walls, w, h)
+    stones = tilt(stones, lookup_table, (0, 1))
+
     return calc_load(stones, h)
 
 
 def solve_b(data):
     (w, h), stones, walls = data
+    lookup_tables = create_lookup_tables(walls, w, h)
 
-    states = {}
-    for n in range(1_000_000_000):
-        for d in ("N", "W", "S", "E"):
-            stones = tilt(stones, walls, w, h, d)
+    states = []
+    while stones not in states:
+        states.append(stones)
+        for l, d in zip(lookup_tables, ((0, 1), (1, 0), (0, -1), (-1, 0))):
+            stones = tilt(stones, l, d)
 
-        state = tuple(stones)
-        if state in states:
-            period = n - states[state]
-            print(period)
-            break
+    cycle_start = states.index(stones)
+    period = len(states) - cycle_start
 
-        states[state] = n
-
-    return calc_load(stones, h)
+    return calc_load(states[cycle_start + ((1_000_000_000 - cycle_start) % period)], h)
 
 
 if __name__ == "__main__":
