@@ -39,13 +39,14 @@ def solve_b(data):
     for lens in lenses:
         box = boxes[hash(lens.label)]
 
-        if lens.f == -1:
-            if lens in box:
+        match (lens.f, lens in box):
+            case -1, True:
                 box.remove(lens)
-        else:
-            if lens in box:
+            case -1, False:
+                ...
+            case _, True:
                 box[box.index(lens)] = lens
-            else:
+            case _, False:
                 box.append(lens)
 
     acc = 0
