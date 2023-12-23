@@ -74,21 +74,24 @@ def build_graph(path: dict[XY, tuple[XY]]) -> dict[XY, list[tuple[XY, int]]]:
     return edges
 
 
-def find_max_path(edges: dict[XY, list[tuple[XY, int]]]) -> int:
-    def inner(cur: XY, seen: frozenset[XY]):
-        if cur == max(edges):
-            return 0
-        if cur in seen:
-            return None
+def find_max_path(
+    edges: dict[XY, list[tuple[XY, int]]], cur=None, seen=frozenset()
+) -> int:
+    cur = cur or min(edges)
 
-        lengths = []
-        for target, score in edges[cur]:
-            if (l := inner(target, seen | {cur})) is not None:
-                lengths.append(l + score)
-        if len(lengths):
-            return max(lengths)
+    if cur == max(edges):
+        return 0
+    if cur in seen:
+        return None
 
-    return inner(min(edges), frozenset())
+    scores = [
+        score + added
+        for target, score in edges[cur]
+        if (added := find_max_path(edges, target, seen | {cur})) is not None
+    ]
+
+    if len(scores):
+        return max(scores)
 
 
 def solve_a(data):
