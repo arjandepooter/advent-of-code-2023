@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+day=$(printf "%02d" $1)
+curl -s https://adventofcode.com/2023/day/$1/input -H "Cookie: session=$AOC_SESSION_TOKEN" > ./aoc_2023/day$day/input.txt
