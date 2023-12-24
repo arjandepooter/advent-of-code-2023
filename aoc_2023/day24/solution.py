@@ -101,14 +101,14 @@ def solve_b(data: list[Particle]):
     dx = find_delta((p.position.x, p.velocity.x) for p in data)
     dy = find_delta((p.position.y, p.velocity.y) for p in data)
     dz = find_delta((p.position.z, p.velocity.z) for p in data)
+    velocity = XYZ(dx, dy, dz)
 
-    # find parallel x over t
+    # find 2 points which are parallel x over t
     p1 = p2 = None
     for p1, p2 in combinations(data, 2):
         if p1.velocity.x == p2.velocity.x:
             break
 
-    # find dt
     dt = p1.position.x // (dx - p1.velocity.x) - p2.position.x // (dx - p2.velocity.x)
     # dt * dz = (a1 * t + b1) - (a2 * (t-dt) + b2)
     # t = (dt * dz - b1 - a2 * dt + b2) / (a1 - a2)
@@ -116,11 +116,9 @@ def solve_b(data: list[Particle]):
     t = (dt * dz - p1.position.z - p2.velocity.z * dt + p2.position.z) // (
         p1.velocity.z - p2.velocity.z
     )
-    x = p1.velocity.x * t + p1.position.x - t * dx
-    y = p1.velocity.y * t + p1.position.y - t * dy
-    z = p1.velocity.z * t + p1.position.z - t * dz
+    initial_position = t * p1.velocity + p1.position - t * velocity
 
-    return x + y + z
+    return len(initial_position)
 
 
 if __name__ == "__main__":
