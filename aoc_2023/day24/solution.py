@@ -17,6 +17,12 @@ class XYZ:
     def __add__(self, other):
         return XYZ(self.x + other.x, self.y + other.y, self.z + other.z)
 
+    def __sub__(self, other):
+        return self + -1 * other
+
+    def __rmul__(self, other):
+        return XYZ(other * self.x, other * self.y, other * self.z)
+
 
 @dataclass
 class Particle:
@@ -65,7 +71,7 @@ def solve_a(data):
 
 
 def get_divisors(n):
-    for i in range(1, isqrt(abs(n + 1)) + 1):
+    for i in range(1, isqrt(abs(n)) + 1):
         if n % i == 0:
             yield i
             yield n // i
@@ -78,9 +84,7 @@ def find_delta(d: list[tuple[int, int]]):
             continue
         ds = set(
             [d0 - div for div in get_divisors(s1 - s0)]
-            + [d0 - div for div in get_divisors(s0 - s1)]
             + [d0 + div for div in get_divisors(s1 - s0)]
-            + [d0 + div for div in get_divisors(s0 - s1)]
         )
 
         if result is None:
@@ -97,8 +101,26 @@ def solve_b(data: list[Particle]):
     dx = find_delta((p.position.x, p.velocity.x) for p in data)
     dy = find_delta((p.position.y, p.velocity.y) for p in data)
     dz = find_delta((p.position.z, p.velocity.z) for p in data)
-    velocity = XYZ(dx, dy, dz)
-    print(velocity)
+
+    # find parallel x over t
+    p1 = p2 = None
+    for p1, p2 in combinations(data, 2):
+        if p1.velocity.x == p2.velocity.x:
+            break
+
+    # find dt
+    dt = p1.position.x // (dx - p1.velocity.x) - p2.position.x // (dx - p2.velocity.x)
+    # dt * dz = (a1 * t + b1) - (a2 * (t-dt) + b2)
+    # t = (dt * dz - b1 - a2 * dt + b2) / (a1 - a2)
+    # z = b1 - 2t - t * dz
+    t = (dt * dz - p1.position.z - p2.velocity.z * dt + p2.position.z) // (
+        p1.velocity.z - p2.velocity.z
+    )
+    x = p1.velocity.x * t + p1.position.x - t * dx
+    y = p1.velocity.y * t + p1.position.y - t * dy
+    z = p1.velocity.z * t + p1.position.z - t * dz
+
+    return x + y + z
 
 
 if __name__ == "__main__":
