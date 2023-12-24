@@ -1,6 +1,4 @@
-from collections import defaultdict
 from dataclasses import dataclass
-from functools import reduce
 from itertools import combinations
 from math import isqrt
 
